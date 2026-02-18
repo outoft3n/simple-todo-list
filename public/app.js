@@ -97,6 +97,38 @@ async function deleteTodo(id) {
     }
 }
 
+// Edit a todo
+async function editTodo(id, newText) {
+    if (!newText.trim()) {
+        alert('Todo text cannot be empty');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/${id}/edit`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text: newText }),
+        });
+
+        if (response.ok) {
+            const updatedTodo = await response.json();
+            const index = todos.findIndex(t => t.id === id);
+            if (index !== -1) {
+                todos[index] = updatedTodo;
+                renderTodos();
+            }
+        } else {
+            alert('Failed to edit todo');
+        }
+    } catch (error) {
+        console.error('Error editing todo:', error);
+        alert('Failed to edit todo');
+    }
+}
+
 // Render todos to the DOM
 function renderTodos() {
     if (todos.length === 0) {

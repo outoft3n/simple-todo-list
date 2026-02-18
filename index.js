@@ -94,6 +94,33 @@ app.put("/api/todos/:id", (req, res) => {
   }
 });
 
+// Edit a todo
+app.put("/api/todos/:id/edit", (req, res) => {
+  const id = parseInt(req.params.id);
+  const { text } = req.body;
+
+  if (!text || text.trim() === "") {
+    return res.status(400).json({ error: "Todo text is required" });
+  }
+
+  const todos = readTodos();
+  const todoIndex = todos.findIndex((t) => t.id === id);
+
+  if (todoIndex === -1) {
+    return res.status(404).json({ error: "Todo not found" });
+  }
+
+  // Update the todo text
+  todos[todoIndex].text = text.trim();
+
+  // Save changes to file and return response
+  if (writeTodos(todos)) {
+    res.json(todos[todoIndex]);
+  } else {
+    res.status(500).json({ error: "Failed to update todo" });
+  }
+});
+
 // Delete a todo
 app.delete("/api/todos/:id", (req, res) => {
   const id = parseInt(req.params.id);

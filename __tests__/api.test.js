@@ -205,6 +205,52 @@ describe('Todo API Endpoints', () => {
     });
   });
 
+  describe('PUT /api/todos/:id/edit', () => {
+    test('should edit a todo text', async () => {
+      // Create a todo first
+      const createResponse = await request(app)
+        .post('/api/todos')
+        .send({ text: 'Original text' });
+
+      const todoId = createResponse.body.id;
+
+      // Edit the todo
+      const newText = 'Updated text';
+      const editResponse = await request(app)
+        .put(`/api/todos/${todoId}/edit`)
+        .send({ text: newText });
+
+      expect(editResponse.status).toBe(200);
+      expect(editResponse.body.text).toBe(newText);
+    });
+
+    test('should return 400 if text is empty', async () => {
+      // Create a todo first
+      const createResponse = await request(app)
+        .post('/api/todos')
+        .send({ text: 'Original text' });
+
+      const todoId = createResponse.body.id;
+
+      // Attempt to edit with empty text
+      const editResponse = await request(app)
+        .put(`/api/todos/${todoId}/edit`)
+        .send({ text: '' });
+
+      expect(editResponse.status).toBe(400);
+      expect(editResponse.body).toHaveProperty('error', 'Todo text is required');
+    });
+
+    test('should return 404 if todo not found', async () => {
+      const editResponse = await request(app)
+        .put('/api/todos/999999/edit')
+        .send({ text: 'Updated text' });
+
+      expect(editResponse.status).toBe(404);
+      expect(editResponse.body).toHaveProperty('error', 'Todo not found');
+    });
+  });
+
   describe('Integration tests', () => {
     test('should handle complete CRUD workflow', async () => {
       // Create a todo
